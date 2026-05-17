@@ -10,10 +10,13 @@
     "dev:cli": "bun run --cwd apps/cli src/index.tsx",
     "dev:gui": "bun run --cwd apps/gui dev",
     "build": "bun --filter '*' build",
-    "typecheck": "bun --filter '*' typecheck"
+    "typecheck": "bun --filter '*' typecheck",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check ."
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "prettier": "^3.8.3",
     "typescript": "^5.9.3"
   }
 }

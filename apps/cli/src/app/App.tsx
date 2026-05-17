@@ -119,7 +119,8 @@ export function App() {
     }
 
     resetComposer();
-    const nextEntries = transcriptStoreRef.current?.append("user", prompt) ?? [];
+    const nextEntries =
+      transcriptStoreRef.current?.append("user", prompt) ?? [];
     setEntries(nextEntries);
     setStatus("Running...");
     loggerRef.current?.logStatus("Running...");
@@ -129,7 +130,8 @@ export function App() {
         try {
           const result = await sessionRef.current!.run(prompt);
           const finalEntries =
-            transcriptStoreRef.current?.append("assistant", result.output) ?? [];
+            transcriptStoreRef.current?.append("assistant", result.output) ??
+            [];
 
           startTransition(() => {
             setEntries(finalEntries);
@@ -140,7 +142,10 @@ export function App() {
           const message =
             error instanceof Error ? error.message : "Unknown agent error";
           const finalEntries =
-            transcriptStoreRef.current?.append("assistant", `Error: ${message}`) ?? [];
+            transcriptStoreRef.current?.append(
+              "assistant",
+              `Error: ${message}`
+            ) ?? [];
 
           startTransition(() => {
             setEntries(finalEntries);
@@ -201,12 +206,15 @@ export function App() {
         title="Conversation"
       >
         {entries.length === 0 ? (
-          <text attributes={TextAttributes.DIM}>
-            Take back your cortex
-          </text>
+          <text attributes={TextAttributes.DIM}>Take back your cortex</text>
         ) : (
           entries.map((entry) => (
-            <box key={entry.id} width="100%" flexDirection="column" marginBottom={1}>
+            <box
+              key={entry.id}
+              width="100%"
+              flexDirection="column"
+              marginBottom={1}
+            >
               <text>{entry.content}</text>
             </box>
           ))
@@ -230,7 +238,7 @@ export function App() {
           {isRunning ? "Agent is responding..." : status}
         </text>
         <text attributes={TextAttributes.DIM}>
-          Commands: /help  /clear  /exit  Ctrl+L clear
+          Commands: /help /clear /exit Ctrl+L clear
         </text>
         <textarea
           key={composerResetKey}
@@ -240,7 +248,9 @@ export function App() {
           height={composerHeight}
           wrapMode="word"
           keyBindings={composerKeyBindings}
-          placeholder={isRunning ? "Wait for the current turn to finish" : "Message Cortex"}
+          placeholder={
+            isRunning ? "Wait for the current turn to finish" : "Message Cortex"
+          }
           onContentChange={() => {
             const value = inputRef.current?.plainText ?? "";
             const nextHeight = Math.max(

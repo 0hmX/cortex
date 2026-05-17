@@ -20,7 +20,10 @@ export class TranscriptStore {
    * @param logger - Logger that records transcript mutations to disk.
    * @returns A transcript store with empty initial state.
    */
-  public constructor(entryFactory: TranscriptEntryFactory, logger: CliFileLogger) {
+  public constructor(
+    entryFactory: TranscriptEntryFactory,
+    logger: CliFileLogger
+  ) {
     this.entryFactory = entryFactory;
     this.logger = logger;
   }

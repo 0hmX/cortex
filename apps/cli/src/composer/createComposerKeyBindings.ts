@@ -14,8 +14,16 @@ export function createComposerKeyBindings() {
           binding.action === "newline"
         ) &&
         !(binding.name === "return" && binding.action === "submit") &&
-        !(binding.name === "return" && binding.meta && binding.action === "submit") &&
-        !(binding.name === "return" && binding.ctrl && binding.action === "submit")
+        !(
+          binding.name === "return" &&
+          binding.meta &&
+          binding.action === "submit"
+        ) &&
+        !(
+          binding.name === "return" &&
+          binding.ctrl &&
+          binding.action === "submit"
+        )
     ),
     { name: "return", action: "submit" as const },
     { name: "return", shift: true, action: "newline" as const },
