@@ -1,0 +1,24 @@
+{
+  "name": "cli-2",
+  "module": "src/index.tsx",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/index.tsx",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@cortex/sdk": "workspace:*",
+    "@cortex/shared": "workspace:*",
+    "@opentui/core": "^0.2.10",
+    "@opentui/react": "^0.2.10",
+    "react": "^19.2.6"
+  }
+}

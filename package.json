@@ -1,0 +1,19 @@
+{
+  "name": "cortex",
+  "private": true,
+  "packageManager": "bun@1.2.15",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:cli": "bun run --cwd apps/cli src/index.tsx",
+    "dev:gui": "bun run --cwd apps/gui dev",
+    "build": "bun --filter '*' build",
+    "typecheck": "bun --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}

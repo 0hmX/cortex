@@ -1,0 +1,17 @@
+{
+  "name": "@cortex/sdk",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "echo sdk package is source-only for MVP",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@cortex/shared": "workspace:*",
+    "@openai/codex-sdk": "^0.130.0"
+  }
+}
