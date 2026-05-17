@@ -11,6 +11,7 @@ const COMPOSER_KEY_BINDINGS = createComposerKeyBindings();
 type PromptComposerProps = {
   composerHeight: number;
   composerResetKey: number;
+  currentWorkingDirectory: string;
   draft: string;
   isDisabled: boolean;
   placeholder: string;
@@ -28,6 +29,7 @@ type PromptComposerProps = {
 export function PromptComposer({
   composerHeight,
   composerResetKey,
+  currentWorkingDirectory,
   draft,
   isDisabled,
   placeholder,
@@ -64,6 +66,9 @@ export function PromptComposer({
       </text>
       <text attributes={TextAttributes.DIM}>
         Commands: /exit Ctrl+L clear
+      </text>
+      <text attributes={TextAttributes.DIM}>
+        CWD: {currentWorkingDirectory}
       </text>
       <textarea
         key={composerResetKey}

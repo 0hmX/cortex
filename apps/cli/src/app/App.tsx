@@ -1,5 +1,6 @@
 import { useAppContext } from "@opentui/react";
 
+import { workingDirectory } from "../constants";
 import { ConversationPane } from "./ConversationPane";
 import { PromptComposer } from "./PromptComposer";
 import { createAppServices } from "./createAppServices";
@@ -28,6 +29,7 @@ export function App() {
       <PromptComposer
         composerHeight={controller.composerHeight}
         composerResetKey={controller.composerResetKey}
+        currentWorkingDirectory={workingDirectory}
         draft={controller.draft}
         isDisabled={controller.isComposerDisabled}
         placeholder={controller.composerPlaceholder}
