@@ -36,6 +36,8 @@ export function App() {
   const [status, setStatus] = useState("Ready");
   const [composerHeight, setComposerHeight] = useState(1);
   const [composerResetKey, setComposerResetKey] = useState(0);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [isRunning, startRunTransition] = useTransition();
   const inputRef = useRef<TextareaRenderable | null>(null);
 
@@ -67,6 +69,22 @@ export function App() {
       },
     });
   }
+
+  const cooldownRemainingMs =
+    cooldownUntil === null ? 0 : Math.max(0, cooldownUntil - currentTime);
+  const isCoolingDown = cooldownRemainingMs > 0;
+  const statusText = isRunning
+    ? "Agent is responding..."
+    : isCoolingDown
+      ? `Cooldown active: wait ${formatCooldownLabel(
+          cooldownRemainingMs
+        )} before the next prompt`
+      : status;
+  const composerPlaceholder = isRunning
+    ? "Wait for the current turn to finish"
+    : isCoolingDown
+      ? `Wait ${formatCooldownLabel(cooldownRemainingMs)} before sending again`
+      : "Message Cortex";
 
   /**
    * Handles slash commands before prompt submission reaches the agent.
@@ -109,12 +127,16 @@ export function App() {
    */
   const submitPrompt = useEffectEvent(async (rawValue: string) => {
     const prompt = rawValue.trim();
-    if (!prompt || isRunning) {
+    if (!prompt) {
       return;
     }
 
     if (prompt.startsWith("/") && handleCommand(prompt)) {
       resetComposer();
+      return;
+    }
+
+    if (isRunning || isCoolingDown) {
       return;
     }
 
@@ -127,18 +149,26 @@ export function App() {
 
     setTimeout(() => {
       startRunTransition(async () => {
+        const startedAt = Date.now();
         try {
           const result = await sessionRef.current!.run(prompt);
+          const runDurationMs = Date.now() - startedAt;
           const finalEntries =
             transcriptStoreRef.current?.append("assistant", result.output) ??
             [];
+          const cooldownMessage = `Cooldown started: ${formatCooldownLabel(
+            runDurationMs
+          )}`;
 
           startTransition(() => {
             setEntries(finalEntries);
             setStatus("Ready");
+            setCurrentTime(Date.now());
+            setCooldownUntil(Date.now() + runDurationMs);
           });
-          loggerRef.current?.logStatus("Ready");
+          loggerRef.current?.logStatus(cooldownMessage);
         } catch (error) {
+          const runDurationMs = Date.now() - startedAt;
           const message =
             error instanceof Error ? error.message : "Unknown agent error";
           const finalEntries =
@@ -146,16 +176,46 @@ export function App() {
               "assistant",
               `Error: ${message}`
             ) ?? [];
+          const cooldownMessage = `Cooldown started after failure: ${formatCooldownLabel(
+            runDurationMs
+          )}`;
 
           startTransition(() => {
             setEntries(finalEntries);
             setStatus("Failed");
+            setCurrentTime(Date.now());
+            setCooldownUntil(Date.now() + runDurationMs);
           });
-          loggerRef.current?.logStatus("Failed");
+          loggerRef.current?.logStatus(cooldownMessage);
         }
       });
     }, 0);
   });
+
+  useEffect(() => {
+    if (!isCoolingDown) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isCoolingDown]);
+
+  useEffect(() => {
+    if (cooldownUntil === null || cooldownRemainingMs > 0) {
+      return;
+    }
+
+    setCooldownUntil(null);
+    setCurrentTime(Date.now());
+    setStatus("Ready");
+    loggerRef.current?.logStatus("Ready");
+  }, [cooldownRemainingMs, cooldownUntil]);
 
   useEffect(() => {
     if (!keyHandler) {
@@ -234,8 +294,14 @@ export function App() {
         paddingLeft={2}
         paddingRight={2}
       >
-        <text attributes={isRunning ? TextAttributes.DIM : TextAttributes.NONE}>
-          {isRunning ? "Agent is responding..." : status}
+        <text
+          attributes={
+            isRunning || isCoolingDown
+              ? TextAttributes.DIM
+              : TextAttributes.NONE
+          }
+        >
+          {statusText}
         </text>
         <text attributes={TextAttributes.DIM}>
           Commands: /help /clear /exit Ctrl+L clear
@@ -248,9 +314,7 @@ export function App() {
           height={composerHeight}
           wrapMode="word"
           keyBindings={composerKeyBindings}
-          placeholder={
-            isRunning ? "Wait for the current turn to finish" : "Message Cortex"
-          }
+          placeholder={composerPlaceholder}
           onContentChange={() => {
             const value = inputRef.current?.plainText ?? "";
             const nextHeight = Math.max(
@@ -268,4 +332,16 @@ export function App() {
       </box>
     </box>
   );
+}
+
+function formatCooldownLabel(durationMs: number): string {
+  if (durationMs < 1_000) {
+    return `${Math.ceil(durationMs)}ms`;
+  }
+
+  if (durationMs < 10_000) {
+    return `${(durationMs / 1_000).toFixed(1)}s`;
+  }
+
+  return `${Math.ceil(durationMs / 1_000)}s`;
 }

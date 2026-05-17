@@ -8,6 +8,7 @@ Terminal chat interface for Cortex, built with Bun, React, and OpenTUI.
 - Starts an agent session scoped to the current working directory.
 - Supports built-in commands: `/help`, `/clear`, and `/exit`.
 - Supports `Ctrl+L` to clear the visible transcript.
+- Applies a post-response cooldown equal to the last agent response time.
 - Writes session logs to `.cortex/logs` in the directory where you launch it.
 
 ## Requirements
