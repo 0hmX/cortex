@@ -121,13 +121,21 @@ export function useCliController({
     services.logger.logStatus("Running...");
 
     const startedAt = Date.now();
+    const snapshot = services.gitAutoCommitter.captureSnapshot();
 
     try {
-      const result = await services.session.run(prompt);
+      const session = services.createSession();
+      const result = await session.run(prompt);
       const runDurationMs = Date.now() - startedAt;
+      const commitSummary = services.gitAutoCommitter.commitPromptChanges(
+        snapshot,
+        prompt
+      );
+      services.logger.logAgentResult(result.output, result.threadId);
+      services.logger.logAutoCommitSummary(commitSummary);
       const finalEntries = services.transcriptStore.append(
         "assistant",
-        result.output
+        services.gitAutoCommitter.formatSummary(commitSummary)
       );
       const cooldownMessage = `Cooldown started: ${formatCooldownLabel(
         runDurationMs
@@ -144,6 +152,7 @@ export function useCliController({
       const runDurationMs = Date.now() - startedAt;
       const message =
         error instanceof Error ? error.message : "Unknown agent error";
+      services.logger.logAgentResult(`Error: ${message}`, null);
       const finalEntries = services.transcriptStore.append(
         "assistant",
         `Error: ${message}`

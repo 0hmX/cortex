@@ -10,9 +10,11 @@ Built with Bun, React, and OpenTUI.
 
 ## What It Does
 
-- Runs a local terminal UI for chatting with a Cortex agent.
-- Starts an agent session scoped to the current working directory.
-- Keeps the interface minimal so the response and the code stay the focus.
+- Runs a local terminal UI for driving a Cortex agent.
+- Starts a fresh agent session for every submitted prompt.
+- Hides the raw model response from the visible transcript.
+- Automatically stages and commits clean file changes after each prompt with a `CORTEX_AUTOCOMMIT:` commit message prefix.
+- Shows commit hash plus added, deleted, and modified file counts instead of assistant prose.
 - Supports the built-in `/exit` command.
 - Supports `Ctrl+L` to clear the visible transcript.
 - Applies a forceful post-response cooldown equal to the last agent response time.

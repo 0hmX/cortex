@@ -6,6 +6,7 @@ import { APP_NAME } from "@cortex/shared";
 
 import { workingDirectory } from "../constants";
 import type { TranscriptEntry } from "../types";
+import type { AutoCommitSummary } from "../git/GitAutoCommitter";
 
 /**
  * Persists CLI activity as newline-delimited JSON log events.
@@ -86,6 +87,27 @@ export class CliFileLogger {
    */
   public logStatus(status: string): void {
     this.writeLine("status.changed", { status });
+  }
+
+  /**
+   * Records the hidden raw agent response for debugging without showing it in the UI.
+   *
+   * @param output - Final text returned by the model run.
+   * @param threadId - Thread identifier associated with the hidden response.
+   * @returns Nothing.
+   */
+  public logAgentResult(output: string, threadId: string | null): void {
+    this.writeLine("agent.result", { output, threadId });
+  }
+
+  /**
+   * Records the auto-commit outcome produced after one prompt run.
+   *
+   * @param summary - Structured commit result written after a prompt finishes.
+   * @returns Nothing.
+   */
+  public logAutoCommitSummary(summary: AutoCommitSummary): void {
+    this.writeLine("git.auto_commit", summary);
   }
 
   /**
