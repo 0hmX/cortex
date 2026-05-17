@@ -11,6 +11,8 @@ export type AutoCommitSummary = {
   filesAdded: number;
   filesDeleted: number;
   filesModified: number;
+  linesAdded: number;
+  linesDeleted: number;
   skippedDirtyPaths: string[];
   status: "committed" | "no_changes" | "not_git_repo";
 };
@@ -85,6 +87,8 @@ export class GitAutoCommitter {
         filesAdded: 0,
         filesDeleted: 0,
         filesModified: 0,
+        linesAdded: 0,
+        linesDeleted: 0,
         skippedDirtyPaths: [],
         status: "not_git_repo",
       };
@@ -125,6 +129,8 @@ export class GitAutoCommitter {
         filesAdded: 0,
         filesDeleted: 0,
         filesModified: 0,
+        linesAdded: 0,
+        linesDeleted: 0,
         skippedDirtyPaths: [...skippedDirtyPaths].sort(),
         status: "no_changes",
       };
@@ -141,11 +147,14 @@ export class GitAutoCommitter {
         filesAdded: 0,
         filesDeleted: 0,
         filesModified: 0,
+        linesAdded: 0,
+        linesDeleted: 0,
         skippedDirtyPaths: [...skippedDirtyPaths].sort(),
         status: "no_changes",
       };
     }
 
+    const diffStat = this.readDiffStat(pathspecs);
     const commitMessage = this.buildCommitMessage(prompt);
     this.runGit(["commit", "-m", commitMessage, "--", ...pathspecs]);
 
@@ -158,6 +167,8 @@ export class GitAutoCommitter {
         stagedEntries.length -
         this.countStatuses(stagedEntries, "A") -
         this.countStatuses(stagedEntries, "D"),
+      linesAdded: diffStat.linesAdded,
+      linesDeleted: diffStat.linesDeleted,
       skippedDirtyPaths: [...skippedDirtyPaths].sort(),
       status: "committed",
     };
@@ -181,12 +192,7 @@ export class GitAutoCommitter {
       );
     }
 
-    const base = [
-      `Commit ${summary.commitHash}`,
-      `files added ${summary.filesAdded}`,
-      `files deleted ${summary.filesDeleted}`,
-      `files modified ${summary.filesModified}`,
-    ].join(" | ");
+    const base = `Commit ${summary.commitHash}\n+${summary.linesAdded} |-${summary.linesDeleted} lines changed`;
 
     return this.appendSkippedDirtyPaths(base, summary.skippedDirtyPaths);
   }
@@ -214,7 +220,7 @@ export class GitAutoCommitter {
         ? `${preview}, +${skippedDirtyPaths.length - 3} more`
         : preview;
 
-    return `${message} | skipped pre-existing dirty paths: ${suffix}`;
+    return `${message}\nskipped pre-existing dirty paths: ${suffix}`;
   }
 
   private buildCommitMessage(prompt: string): string {
@@ -275,6 +281,36 @@ export class GitAutoCommitter {
       .map((line) => this.parseDiffNameStatusLine(line));
   }
 
+  private readDiffStat(pathspecs: string[]): {
+    linesAdded: number;
+    linesDeleted: number;
+  } {
+    const output = this.runGit(["diff", "--cached", "--numstat", "--", ...pathspecs]);
+    if (!output.trim()) {
+      return {
+        linesAdded: 0,
+        linesDeleted: 0,
+      };
+    }
+
+    return output
+      .split("\n")
+      .filter((line) => line.length > 0)
+      .reduce(
+        (totals, line) => {
+          const [added, deleted] = line.split("\t");
+          return {
+            linesAdded: totals.linesAdded + this.parseNumStatCount(added),
+            linesDeleted: totals.linesDeleted + this.parseNumStatCount(deleted),
+          };
+        },
+        {
+          linesAdded: 0,
+          linesDeleted: 0,
+        }
+      );
+  }
+
   private parseStatusLine(line: string): GitStatusEntry {
     const statusCode = line.slice(0, 2).trim() || "M";
     const rawPath = line.slice(3).trim();
@@ -306,6 +342,15 @@ export class GitAutoCommitter {
       originalPath,
       statusCode: statusCode ?? "M",
     };
+  }
+
+  private parseNumStatCount(value: string | undefined): number {
+    if (!value || value === "-") {
+      return 0;
+    }
+
+    const count = Number.parseInt(value, 10);
+    return Number.isNaN(count) ? 0 : count;
   }
 
   private runGit(args: string[]): string {
