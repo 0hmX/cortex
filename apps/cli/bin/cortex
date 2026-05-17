@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+LAUNCH_CWD="$(pwd)"
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 APP_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -30,4 +31,4 @@ EOF
 fi
 
 cd "$APP_DIR"
-exec bun run src/index.tsx "$@"
+exec env CORTEX_LAUNCH_CWD="$LAUNCH_CWD" bun run src/index.tsx "$@"
