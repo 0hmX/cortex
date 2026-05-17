@@ -2,6 +2,31 @@
 
 set -euo pipefail
 
+usage() {
+  cat <<'EOF'
+Usage: install.sh [--help]
+
+Install the Cortex launcher into ~/.local/bin.
+
+Options:
+  -h, --help  Show this help message and exit.
+EOF
+}
+
+case "${1:-}" in
+  "" ) ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    echo >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
 if [[ "${OSTYPE:-}" != linux* ]]; then
   echo "This installer only supports Linux." >&2
   exit 1

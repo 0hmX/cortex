@@ -53,7 +53,7 @@ bun run typecheck
 Install the `cortex` command into `~/.local/bin`:
 
 ```bash
-./install-linux.sh
+./install.sh
 ```
 
 The installer:
@@ -72,6 +72,12 @@ You can also run the installer through Bun:
 
 ```bash
 bun run install:linux
+```
+
+Show installer help:
+
+```bash
+./install.sh --help
 ```
 
 ## Usage
