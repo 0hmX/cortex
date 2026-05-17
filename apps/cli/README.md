@@ -13,7 +13,7 @@ Built with Bun, React, and OpenTUI.
 - Runs a local terminal UI for chatting with a Cortex agent.
 - Starts an agent session scoped to the current working directory.
 - Keeps the interface minimal so the response and the code stay the focus.
-- Supports built-in commands: `/help`, `/clear`, and `/exit`.
+- Supports the built-in `/exit` command.
 - Supports `Ctrl+L` to clear the visible transcript.
 - Applies a forceful post-response cooldown equal to the last agent response time.
 - Writes session logs to `.cortex/logs` in the directory where you launch it.
@@ -88,8 +88,6 @@ bun run src/index.tsx
 
 ## Commands
 
-- `/help` shows available commands and editor shortcuts
-- `/clear` clears the transcript in the current session
 - `/exit` closes the CLI
 - `Ctrl+L` clears the visible transcript
 

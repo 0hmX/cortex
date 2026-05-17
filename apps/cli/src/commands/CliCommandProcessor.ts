@@ -1,4 +1,3 @@
-import { HELP_TEXT } from "../constants";
 import { CliFileLogger } from "../logging/CliFileLogger";
 import { TranscriptStore } from "../transcript/TranscriptStore";
 import type { CommandExecutionResult } from "../types";
@@ -39,22 +38,6 @@ export class CliCommandProcessor {
   public execute(rawValue: string): CommandExecutionResult {
     const command = rawValue.trim().toLowerCase();
     this.logger.logCommand(command);
-
-    if (command === "/help") {
-      return {
-        handled: true,
-        entries: this.transcriptStore.append("assistant", HELP_TEXT),
-        status: "Showing help",
-      };
-    }
-
-    if (command === "/clear") {
-      return {
-        handled: true,
-        entries: this.transcriptStore.clear("command:/clear"),
-        status: "Transcript cleared",
-      };
-    }
 
     if (command === "/exit") {
       this.onExit();

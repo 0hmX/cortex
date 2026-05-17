@@ -62,7 +62,7 @@ export function PromptComposer({
         {statusText}
       </text>
       <text attributes={TextAttributes.DIM}>
-        Commands: /help /clear /exit Ctrl+L clear
+        Commands: /exit Ctrl+L clear
       </text>
       <textarea
         key={composerResetKey}
