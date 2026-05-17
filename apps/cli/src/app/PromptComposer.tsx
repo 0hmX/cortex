@@ -36,6 +36,9 @@ export function PromptComposer({
 }: PromptComposerProps) {
   const inputRef = useRef<TextareaRenderable | null>(null);
   const promptBoxHeight = composerHeight + 5;
+  const focusInput = () => {
+    inputRef.current?.focus();
+  };
 
   return (
     <box
@@ -50,6 +53,10 @@ export function PromptComposer({
       padding={1}
       paddingLeft={2}
       paddingRight={2}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        focusInput();
+      }}
     >
       <text attributes={isDisabled ? TextAttributes.DIM : TextAttributes.NONE}>
         {statusText}
