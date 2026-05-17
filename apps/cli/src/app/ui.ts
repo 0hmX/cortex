@@ -1,0 +1,1 @@
+export const COMPOSER_SURFACE_BACKGROUND = "#6f6f6f71";

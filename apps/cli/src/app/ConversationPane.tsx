@@ -1,6 +1,7 @@
 import { TextAttributes } from "@opentui/core";
 
 import type { TranscriptEntry } from "../types";
+import { COMPOSER_SURFACE_BACKGROUND } from "./ui";
 
 type ConversationPaneProps = {
   entries: TranscriptEntry[];
@@ -32,6 +33,11 @@ export function ConversationPane({ entries }: ConversationPaneProps) {
             width="100%"
             flexDirection="column"
             marginBottom={1}
+            backgroundColor={
+              entry.role === "user" ? COMPOSER_SURFACE_BACKGROUND : undefined
+            }
+            paddingX={entry.role === "user" ? 2 : undefined}
+            paddingY={entry.role === "user" ? 1 : undefined}
           >
             <text>{entry.content}</text>
           </box>

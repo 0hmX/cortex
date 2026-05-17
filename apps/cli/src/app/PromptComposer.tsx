@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { TextareaRenderable, TextAttributes } from "@opentui/core";
 
 import { createComposerKeyBindings } from "../composer/createComposerKeyBindings";
+import { COMPOSER_SURFACE_BACKGROUND } from "./ui";
 
 const MAX_COMPOSER_HEIGHT = 6;
 const COMPOSER_KEY_BINDINGS = createComposerKeyBindings();
@@ -49,7 +50,7 @@ export function PromptComposer({
       title="Prompt"
       bottomTitle="Enter to send"
       bottomTitleAlignment="right"
-      backgroundColor="#6f6f6f71"
+      backgroundColor={COMPOSER_SURFACE_BACKGROUND}
       padding={1}
       paddingLeft={2}
       paddingRight={2}
