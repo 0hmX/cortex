@@ -1,11 +1,15 @@
 {
-  "name": "cli-2",
+  "name": "cortex",
   "module": "src/index.tsx",
   "type": "module",
   "private": true,
+  "bin": {
+    "cortex": "./bin/cortex"
+  },
   "scripts": {
     "dev": "bun run --watch src/index.tsx",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "install:linux": "./install-linux.sh"
   },
   "devDependencies": {
     "@types/bun": "latest",

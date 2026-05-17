@@ -1,4 +1,4 @@
-# react
+# cortex
 
 To install dependencies:
 
@@ -12,4 +12,10 @@ To run:
 bun dev
 ```
 
-This project was created using `bun create tui`. [create-tui](https://git.new/create-tui) is the easiest way to get started with OpenTUI.
+To install the Linux launcher as `cortex`:
+
+```bash
+./install-linux.sh
+```
+
+This creates `~/.local/bin/cortex`, which launches the CLI from this checkout using Bun.
