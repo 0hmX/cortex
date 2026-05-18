@@ -1,5 +1,6 @@
 import { useAppContext } from "@opentui/react";
 
+import { workingDirectory } from "../constants";
 import { PromptComposer } from "./PromptComposer";
 import { ResultPane } from "./ResultPane";
 import { createAppServices } from "./createAppServices";
@@ -15,6 +16,7 @@ import { useSingleton } from "./useSingleton";
 export function App() {
   const { keyHandler, renderer } = useAppContext();
   const services = useSingleton(createAppServices);
+  const cwdLabel = `cwd: ${workingDirectory}`;
   const controller = useCliController({
     keyHandler,
     onExit: () => {
@@ -51,6 +53,7 @@ export function App() {
           <text fg={HERO_MUTED}>
             No chat. Use `n` after the result to start over.
           </text>
+          <text fg={HERO_MUTED}>{cwdLabel}</text>
           <box width="100%" maxWidth={88} marginTop={2}>
             <PromptComposer {...composerProps} />
           </box>
@@ -72,6 +75,7 @@ export function App() {
         <box width="100%" flexDirection="column" alignItems="center">
           <text fg={COMPOSER_ACCENT}>Running prompt</text>
           <text fg={HERO_MUTED}>{controller.promptSummary}</text>
+          <text fg={HERO_MUTED}>{cwdLabel}</text>
           <box width="100%" maxWidth={88} marginTop={2}>
             <ResultPane
               content={controller.output}
@@ -102,6 +106,7 @@ export function App() {
           <text fg={HERO_MUTED}>
             This run is finished. Press `n` to start a new session.
           </text>
+          <text fg={HERO_MUTED}>{cwdLabel}</text>
         </box>
         <box width="100%" flexGrow={1} marginTop={1}>
           <ResultPane
