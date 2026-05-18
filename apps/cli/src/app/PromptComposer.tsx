@@ -3,16 +3,19 @@ import { useRef } from "react";
 import { TextareaRenderable, TextAttributes } from "@opentui/core";
 
 import { createComposerKeyBindings } from "../composer/createComposerKeyBindings";
-import { COMPOSER_SURFACE_BACKGROUND } from "./ui";
+import {
+  COMPOSER_ACCENT,
+  COMPOSER_SURFACE_BACKGROUND,
+  HERO_MUTED,
+} from "./ui";
 
 const MAX_COMPOSER_HEIGHT = 6;
 const COMPOSER_KEY_BINDINGS = createComposerKeyBindings();
 
 type PromptComposerProps = {
-  composerHeight: number;
-  composerResetKey: number;
-  currentWorkingDirectory: string;
   draft: string;
+  inputHeight: number;
+  inputResetKey: number;
   isDisabled: boolean;
   placeholder: string;
   statusText: string;
@@ -27,10 +30,9 @@ type PromptComposerProps = {
  * @returns The prompt composer pane.
  */
 export function PromptComposer({
-  composerHeight,
-  composerResetKey,
-  currentWorkingDirectory,
   draft,
+  inputHeight,
+  inputResetKey,
   isDisabled,
   placeholder,
   statusText,
@@ -38,7 +40,7 @@ export function PromptComposer({
   onSubmit,
 }: PromptComposerProps) {
   const inputRef = useRef<TextareaRenderable | null>(null);
-  const promptBoxHeight = composerHeight + 5;
+  const promptBoxHeight = inputHeight + 4;
   const focusInput = () => {
     inputRef.current?.focus();
   };
@@ -48,34 +50,29 @@ export function PromptComposer({
       width="100%"
       height={promptBoxHeight}
       flexDirection="column"
-      paddingX={1}
-      title="Prompt"
-      bottomTitle="Enter to send"
-      bottomTitleAlignment="right"
+      paddingX={3}
       backgroundColor={COMPOSER_SURFACE_BACKGROUND}
       padding={1}
-      paddingLeft={2}
-      paddingRight={2}
       onMouseDown={(event) => {
         event.preventDefault();
         focusInput();
       }}
     >
+      <text
+        fg={COMPOSER_ACCENT}
+        attributes={TextAttributes.BOLD}
+      >
+        One Prompt
+      </text>
       <text attributes={isDisabled ? TextAttributes.DIM : TextAttributes.NONE}>
-        {statusText}
-      </text>
-      <text attributes={TextAttributes.DIM}>
-        Commands: /exit Ctrl+L clear
-      </text>
-      <text attributes={TextAttributes.DIM}>
-        CWD: {currentWorkingDirectory}
+        {isDisabled ? statusText : "Submit once. Review the diff. Start a new session."}
       </text>
       <textarea
-        key={composerResetKey}
+        key={inputResetKey}
         ref={inputRef}
         focused
         width="100%"
-        height={composerHeight}
+        height={inputHeight}
         wrapMode="word"
         keyBindings={COMPOSER_KEY_BINDINGS}
         placeholder={placeholder}

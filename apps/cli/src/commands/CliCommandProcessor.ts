@@ -1,5 +1,4 @@
 import { CliFileLogger } from "../logging/CliFileLogger";
-import { TranscriptStore } from "../transcript/TranscriptStore";
 import type { CommandExecutionResult } from "../types";
 
 /**
@@ -9,22 +8,19 @@ import type { CommandExecutionResult } from "../types";
  * The processor only handles known slash commands and leaves other input alone.
  */
 export class CliCommandProcessor {
-  private readonly transcriptStore: TranscriptStore;
   private readonly logger: CliFileLogger;
   private readonly onExit: () => void;
 
   /**
    * Creates a command processor with the collaborators it mutates.
    *
-   * @param options - Dependencies required to mutate transcript, logs, and exit flow.
+   * @param options - Dependencies required to log commands and exit cleanly.
    * @returns A command processor ready to execute slash commands.
    */
   public constructor(options: {
-    transcriptStore: TranscriptStore;
     logger: CliFileLogger;
     onExit: () => void;
   }) {
-    this.transcriptStore = options.transcriptStore;
     this.logger = options.logger;
     this.onExit = options.onExit;
   }
@@ -43,14 +39,12 @@ export class CliCommandProcessor {
       this.onExit();
       return {
         handled: true,
-        entries: this.transcriptStore.getEntries(),
         status: "Shutting down",
       };
     }
 
     return {
       handled: false,
-      entries: this.transcriptStore.getEntries(),
       status: "Ready",
     };
   }

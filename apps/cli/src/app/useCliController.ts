@@ -8,11 +8,7 @@ import {
 import type { KeyEvent } from "@opentui/core";
 
 import { CliCommandProcessor } from "../commands/CliCommandProcessor";
-import type { TranscriptEntry } from "../types";
 import type { CliAppServices } from "./createAppServices";
-import { formatCooldownLabel } from "./formatCooldownLabel";
-
-const COOLDOWN_TICK_MS = 100;
 
 type KeyHandlerLike = {
   off: (eventName: "keypress", listener: (event: KeyEvent) => void) => void;
@@ -26,19 +22,25 @@ type UseCliControllerOptions = {
 };
 
 type CliController = {
-  composerHeight: number;
-  composerPlaceholder: string;
-  composerResetKey: number;
   draft: string;
-  entries: TranscriptEntry[];
-  isComposerDisabled: boolean;
+  inputHeight: number;
+  inputResetKey: number;
+  isSubmitting: boolean;
+  isPrompting: boolean;
+  isShowingResult: boolean;
+  output: string;
+  promptSummary: string;
+  outputTitle: string;
+  promptPlaceholder: string;
+  pulseFrame: string;
   statusText: string;
+  startNewSession: () => void;
   submitPrompt: (rawValue: string) => Promise<void>;
   updateDraft: (value: string, height: number) => void;
 };
 
 /**
- * Owns prompt execution, cooldown timing, command handling, and transcript state.
+ * Owns prompt execution, command handling, and single-result UI state.
  *
  * @param options - Shared services and terminal event dependencies.
  * @returns UI-ready state and actions for the CLI shell.
@@ -48,40 +50,44 @@ export function useCliController({
   onExit,
   services,
 }: UseCliControllerOptions): CliController {
-  const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [draft, setDraft] = useState("");
   const [status, setStatus] = useState("Ready");
-  const [composerHeight, setComposerHeight] = useState(1);
-  const [composerResetKey, setComposerResetKey] = useState(0);
-  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [inputHeight, setInputHeight] = useState(1);
+  const [inputResetKey, setInputResetKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const cooldownRemainingMs =
-    cooldownUntil === null ? 0 : Math.max(0, cooldownUntil - currentTime);
-  const isCoolingDown = cooldownRemainingMs > 0;
-  const isComposerDisabled = isSubmitting || isCoolingDown;
-  const statusText = isSubmitting
-    ? "Agent is responding..."
-    : isCoolingDown
-      ? `Cooldown active: wait ${formatCooldownLabel(
-          cooldownRemainingMs
-        )} before the next prompt`
-      : status;
-  const composerPlaceholder = isSubmitting
-    ? "Wait for the current turn to finish"
-    : "Message Cortex";
+  const [output, setOutput] = useState("");
+  const [promptSummary, setPromptSummary] = useState("");
+  const [outputTitle, setOutputTitle] = useState("Diff");
+  const [pulseFrameIndex, setPulseFrameIndex] = useState(0);
+  const pulseFrames = [".", "..", "..."] as const;
+  const pulseFrame: string = pulseFrames[pulseFrameIndex] ?? ".";
+  const isPrompting = !isSubmitting && output.trim().length === 0;
+  const isShowingResult = !isSubmitting && output.trim().length > 0;
+  const statusText = isSubmitting ? `Working${pulseFrame}` : status;
+  const promptPlaceholder = isSubmitting
+    ? "Cortex is working"
+    : "Describe the change. One prompt only.";
 
   const resetComposer = useEffectEvent(() => {
     setDraft("");
-    setComposerHeight(1);
-    setComposerResetKey((value) => value + 1);
+    setInputHeight(1);
+    setInputResetKey((value) => value + 1);
     services.logger.logInputValue("");
+  });
+
+  const startNewSession = useEffectEvent(() => {
+    resetComposer();
+    startTransition(() => {
+      setOutput("");
+      setPromptSummary("");
+      setOutputTitle("Diff");
+      setStatus("Ready");
+    });
+    services.logger.logStatus("Ready");
   });
 
   const handleCommand = useEffectEvent((rawValue: string) => {
     const processor = new CliCommandProcessor({
-      transcriptStore: services.transcriptStore,
       logger: services.logger,
       onExit,
     });
@@ -91,7 +97,6 @@ export function useCliController({
     }
 
     startTransition(() => {
-      setEntries(result.entries);
       setStatus(result.status);
     });
     services.logger.logStatus(result.status);
@@ -110,64 +115,41 @@ export function useCliController({
       return;
     }
 
-    if (isComposerDisabled) {
+    if (isSubmitting) {
       return;
     }
 
     resetComposer();
-    setEntries(services.transcriptStore.append("user", prompt));
     setStatus("Running...");
     setIsSubmitting(true);
+    setOutput("");
+    setPromptSummary(prompt);
+    setOutputTitle("Diff");
     services.logger.logStatus("Running...");
-
-    const startedAt = Date.now();
-    const snapshot = services.gitAutoCommitter.captureSnapshot();
 
     try {
       const session = services.createSession();
       const result = await session.run(prompt);
-      const runDurationMs = Date.now() - startedAt;
-      const commitSummary = services.gitAutoCommitter.commitPromptChanges(
-        snapshot,
-        prompt
-      );
       services.logger.logAgentResult(result.output, result.threadId);
-      services.logger.logAutoCommitSummary(commitSummary);
-      const finalEntries = services.transcriptStore.append(
-        "assistant",
-        services.gitAutoCommitter.formatSummary(commitSummary)
-      );
-      const cooldownMessage = `Cooldown started: ${formatCooldownLabel(
-        runDurationMs
-      )}`;
 
       startTransition(() => {
-        setEntries(finalEntries);
+        setOutput(result.output);
+        setOutputTitle("Diff");
         setStatus("Ready");
-        setCurrentTime(Date.now());
-        setCooldownUntil(Date.now() + runDurationMs);
       });
-      services.logger.logStatus(cooldownMessage);
+      services.logger.logStatus("Ready");
     } catch (error) {
-      const runDurationMs = Date.now() - startedAt;
       const message =
         error instanceof Error ? error.message : "Unknown agent error";
       services.logger.logAgentResult(`Error: ${message}`, null);
-      const finalEntries = services.transcriptStore.append(
-        "assistant",
-        `Error: ${message}`
-      );
-      const cooldownMessage = `Cooldown started after failure: ${formatCooldownLabel(
-        runDurationMs
-      )}`;
 
       startTransition(() => {
-        setEntries(finalEntries);
+        setOutput(`Error: ${message}`);
+        setPromptSummary(prompt);
+        setOutputTitle("Run Failed");
         setStatus("Failed");
-        setCurrentTime(Date.now());
-        setCooldownUntil(Date.now() + runDurationMs);
       });
-      services.logger.logStatus(cooldownMessage);
+      services.logger.logStatus("Failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -175,34 +157,23 @@ export function useCliController({
 
   const updateDraft = useEffectEvent((value: string, height: number) => {
     setDraft(value);
-    setComposerHeight(height);
+    setInputHeight(height);
     services.logger.logInputValue(value);
   });
 
   useEffect(() => {
-    if (!isCoolingDown) {
+    if (!isSubmitting) {
       return;
     }
 
     const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, COOLDOWN_TICK_MS);
+      setPulseFrameIndex((current) => (current + 1) % pulseFrames.length);
+    }, 280);
 
     return () => {
       clearInterval(interval);
     };
-  }, [isCoolingDown]);
-
-  useEffect(() => {
-    if (cooldownUntil === null || cooldownRemainingMs > 0) {
-      return;
-    }
-
-    setCooldownUntil(null);
-    setCurrentTime(Date.now());
-    setStatus("Ready");
-    services.logger.logStatus("Ready");
-  }, [cooldownRemainingMs, cooldownUntil, services.logger]);
+  }, [isSubmitting]);
 
   useEffect(() => {
     if (!keyHandler) {
@@ -210,25 +181,19 @@ export function useCliController({
     }
 
     const onKeyPress = (event: KeyEvent) => {
-      if (!event.ctrl || event.name !== "l") {
+      if (!event.ctrl || event.name !== "n") {
         return;
       }
 
       event.preventDefault();
-      const nextEntries = services.transcriptStore.clear("keyboard:ctrl+l");
-
-      startTransition(() => {
-        setEntries(nextEntries);
-        setStatus("Transcript cleared");
-      });
-      services.logger.logStatus("Transcript cleared");
+      startNewSession();
     };
 
     keyHandler.on("keypress", onKeyPress);
     return () => {
       keyHandler.off("keypress", onKeyPress);
     };
-  }, [keyHandler, services.logger, services.transcriptStore]);
+  }, [keyHandler, services.logger, startNewSession]);
 
   useEffect(() => {
     services.logger.logStatus("Ready");
@@ -239,13 +204,19 @@ export function useCliController({
   }, [services.logger]);
 
   return {
-    composerHeight,
-    composerPlaceholder,
-    composerResetKey,
     draft,
-    entries,
-    isComposerDisabled,
+    inputHeight,
+    inputResetKey,
+    isSubmitting,
+    isPrompting,
+    isShowingResult,
+    output,
+    promptSummary,
+    outputTitle,
+    promptPlaceholder,
+    pulseFrame,
     statusText,
+    startNewSession,
     submitPrompt,
     updateDraft,
   };

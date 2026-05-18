@@ -5,8 +5,6 @@ import process from "node:process";
 import { APP_NAME } from "@cortex/shared";
 
 import { workingDirectory } from "../constants";
-import type { TranscriptEntry } from "../types";
-import type { AutoCommitSummary } from "../git/GitAutoCommitter";
 
 /**
  * Persists CLI activity as newline-delimited JSON log events.
@@ -46,30 +44,6 @@ export class CliFileLogger {
   }
 
   /**
-   * Stores one transcript entry in the session log.
-   *
-   * @param entry - The transcript entry to serialize into the log stream.
-   * @returns Nothing.
-   */
-  public logTranscriptEntry(entry: TranscriptEntry): void {
-    this.writeLine("transcript.entry", {
-      id: entry.id,
-      role: entry.role,
-      content: entry.content,
-    });
-  }
-
-  /**
-   * Records that the transcript was cleared and why.
-   *
-   * @param reason - Short machine-readable reason for the clear action.
-   * @returns Nothing.
-   */
-  public logTranscriptCleared(reason: string): void {
-    this.writeLine("transcript.cleared", { reason });
-  }
-
-  /**
    * Records a handled slash command invocation.
    *
    * @param command - Normalized slash command text that was executed.
@@ -98,16 +72,6 @@ export class CliFileLogger {
    */
   public logAgentResult(output: string, threadId: string | null): void {
     this.writeLine("agent.result", { output, threadId });
-  }
-
-  /**
-   * Records the auto-commit outcome produced after one prompt run.
-   *
-   * @param summary - Structured commit result written after a prompt finishes.
-   * @returns Nothing.
-   */
-  public logAutoCommitSummary(summary: AutoCommitSummary): void {
-    this.writeLine("git.auto_commit", summary);
   }
 
   /**
