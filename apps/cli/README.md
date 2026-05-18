@@ -13,7 +13,7 @@ Built with Bun, React, and OpenTUI.
 - Shows one centered prompt surface instead of a chat layout.
 - Runs the prompt immediately when you press `Enter`.
 - Shows the raw agent output directly in a single result pane.
-- Supports the built-in `/exit` command.
+- Lets you quit from the result view with `q`.
 - Supports `Ctrl+L` to clear the visible output.
 - Writes session logs to `.cortex/logs` in the directory where you launch it.
 
@@ -91,9 +91,11 @@ Without installing the launcher:
 bun run src/index.tsx
 ```
 
-## Commands
+## Controls
 
-- `/exit` closes the CLI
+- `q` quits from the result view
+- `n` starts a new session from the result view
+- `Ctrl+C` exits from the terminal
 - `Ctrl+L` clears the visible output
 
 ## Logging

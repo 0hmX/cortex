@@ -7,7 +7,6 @@ import {
 
 import type { KeyEvent } from "@opentui/core";
 
-import { CliCommandProcessor } from "../commands/CliCommandProcessor";
 import type { CliAppServices } from "./createAppServices";
 
 type KeyHandlerLike = {
@@ -68,7 +67,7 @@ export function useCliController({
   const [promptSummary, setPromptSummary] = useState("");
   const [outputTitle, setOutputTitle] = useState("Output");
   const [resultHint, setResultHint] = useState(
-    "Press n to start a new session. Press q for quit help."
+    "Press n to start a new session. Press q to quit."
   );
   const [pulseFrameIndex, setPulseFrameIndex] = useState(0);
   const pulseFrames = [".", "..", "..."] as const;
@@ -93,38 +92,15 @@ export function useCliController({
       setOutput("");
       setPromptSummary("");
       setOutputTitle("Output");
-      setResultHint("Press n to start a new session. Press q for quit help.");
+      setResultHint("Press n to start a new session. Press q to quit.");
       setStatus("Ready");
     });
     services.logger.logStatus("Ready");
   });
 
-  const handleCommand = useEffectEvent((rawValue: string) => {
-    const processor = new CliCommandProcessor({
-      logger: services.logger,
-      onExit,
-    });
-    const result = processor.execute(rawValue);
-    if (!result.handled) {
-      return false;
-    }
-
-    startTransition(() => {
-      setStatus(result.status);
-    });
-    services.logger.logStatus(result.status);
-
-    return true;
-  });
-
   const submitPrompt = useEffectEvent(async (rawValue: string) => {
     const prompt = rawValue.trim();
     if (!prompt) {
-      return;
-    }
-
-    if (prompt.startsWith("/") && handleCommand(prompt)) {
-      resetComposer();
       return;
     }
 
@@ -138,7 +114,7 @@ export function useCliController({
     setOutput("");
     setPromptSummary(prompt);
     setOutputTitle("Output");
-    setResultHint("Press n to start a new session. Press q for quit help.");
+    setResultHint("Press n to start a new session. Press q to quit.");
     services.logger.logStatus("Running...");
 
     try {
@@ -214,16 +190,14 @@ export function useCliController({
       event.preventDefault();
       event.stopPropagation();
       services.logger.logShortcut("q");
-      startTransition(() => {
-        setResultHint("There is no q shortcut. Type /exit to quit.");
-      });
+      onExit();
     };
 
     keyHandler.on("keypress", onKeyPress);
     return () => {
       keyHandler.off("keypress", onKeyPress);
     };
-  }, [isShowingResult, keyHandler, services.logger, startNewSession]);
+  }, [isShowingResult, keyHandler, onExit, services.logger, startNewSession]);
 
   useEffect(() => {
     services.logger.logStatus("Ready");
