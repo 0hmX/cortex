@@ -29,6 +29,7 @@ type CliController = {
   isPrompting: boolean;
   isShowingResult: boolean;
   output: string;
+  resultHint: string;
   promptSummary: string;
   outputTitle: string;
   promptPlaceholder: string;
@@ -39,16 +40,12 @@ type CliController = {
   updateDraft: (value: string, height: number) => void;
 };
 
-function isStartNewSessionShortcut(event: KeyEvent): boolean {
-  if (!event.ctrl) {
+function isPlainResultKey(event: KeyEvent, key: string): boolean {
+  if (event.ctrl || event.meta || event.shift) {
     return false;
   }
 
-  return (
-    event.name.toLowerCase() === "n" ||
-    event.sequence === "\u000e" ||
-    event.raw === "\u000e"
-  );
+  return event.name.toLowerCase() === key;
 }
 
 /**
@@ -69,7 +66,10 @@ export function useCliController({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [output, setOutput] = useState("");
   const [promptSummary, setPromptSummary] = useState("");
-  const [outputTitle, setOutputTitle] = useState("Diff");
+  const [outputTitle, setOutputTitle] = useState("Output");
+  const [resultHint, setResultHint] = useState(
+    "Press n to start a new session. Press q for quit help."
+  );
   const [pulseFrameIndex, setPulseFrameIndex] = useState(0);
   const pulseFrames = [".", "..", "..."] as const;
   const pulseFrame: string = pulseFrames[pulseFrameIndex] ?? ".";
@@ -92,7 +92,8 @@ export function useCliController({
     startTransition(() => {
       setOutput("");
       setPromptSummary("");
-      setOutputTitle("Diff");
+      setOutputTitle("Output");
+      setResultHint("Press n to start a new session. Press q for quit help.");
       setStatus("Ready");
     });
     services.logger.logStatus("Ready");
@@ -136,7 +137,8 @@ export function useCliController({
     setIsSubmitting(true);
     setOutput("");
     setPromptSummary(prompt);
-    setOutputTitle("Diff");
+    setOutputTitle("Output");
+    setResultHint("Press n to start a new session. Press q for quit help.");
     services.logger.logStatus("Running...");
 
     try {
@@ -146,7 +148,7 @@ export function useCliController({
 
       startTransition(() => {
         setOutput(result.output);
-        setOutputTitle("Diff");
+        setOutputTitle("Output");
         setStatus("Ready");
       });
       services.logger.logStatus("Ready");
@@ -193,21 +195,35 @@ export function useCliController({
     }
 
     const onKeyPress = (event: KeyEvent) => {
-      if (!isStartNewSessionShortcut(event)) {
+      if (!isShowingResult) {
+        return;
+      }
+
+      if (isPlainResultKey(event, "n")) {
+        event.preventDefault();
+        event.stopPropagation();
+        services.logger.logShortcut("n");
+        startNewSession();
+        return;
+      }
+
+      if (!isPlainResultKey(event, "q")) {
         return;
       }
 
       event.preventDefault();
       event.stopPropagation();
-      services.logger.logShortcut("ctrl+n");
-      startNewSession();
+      services.logger.logShortcut("q");
+      startTransition(() => {
+        setResultHint("There is no q shortcut. Type /exit to quit.");
+      });
     };
 
     keyHandler.on("keypress", onKeyPress);
     return () => {
       keyHandler.off("keypress", onKeyPress);
     };
-  }, [keyHandler, services.logger, startNewSession]);
+  }, [isShowingResult, keyHandler, services.logger, startNewSession]);
 
   useEffect(() => {
     services.logger.logStatus("Ready");
@@ -225,6 +241,7 @@ export function useCliController({
     isPrompting,
     isShowingResult,
     output,
+    resultHint,
     promptSummary,
     outputTitle,
     promptPlaceholder,

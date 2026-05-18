@@ -4,6 +4,7 @@ import { COMPOSER_SURFACE_BACKGROUND, HERO_MUTED } from "./ui";
 
 type ResultPaneProps = {
   content: string;
+  footerMessage?: string;
   isSubmitting: boolean;
   pulseFrame: string;
   promptSummary: string;
@@ -18,6 +19,7 @@ type ResultPaneProps = {
  */
 export function ResultPane({
   content,
+  footerMessage,
   isSubmitting,
   pulseFrame,
   promptSummary,
@@ -41,9 +43,7 @@ export function ResultPane({
       <scrollbox width="100%" flexGrow={1} scrollY stickyScroll stickyStart="top">
         <text>{body}</text>
       </scrollbox>
-      {!isSubmitting ? (
-        <text fg={HERO_MUTED}>Ctrl+N starts a new session.</text>
-      ) : null}
+      {!isSubmitting && footerMessage ? <text fg={HERO_MUTED}>{footerMessage}</text> : null}
     </box>
   );
 }

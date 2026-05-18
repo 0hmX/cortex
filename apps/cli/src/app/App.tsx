@@ -45,8 +45,8 @@ export function App() {
         justifyContent="center"
       >
         <box width="100%" flexDirection="column" alignItems="center">
-          <text fg={COMPOSER_ACCENT}>Prompt once. Then inspect the diff.</text>
-          <text fg={HERO_MUTED}>No chat. Use `Ctrl+N` after the result to start over.</text>
+          <text fg={COMPOSER_ACCENT}>Prompt once. Then inspect the output.</text>
+          <text fg={HERO_MUTED}>No chat. Use `n` after the result to start over.</text>
           <box width="100%" maxWidth={88} marginTop={2}>
             <PromptComposer {...composerProps} />
           </box>
@@ -71,10 +71,11 @@ export function App() {
           <box width="100%" maxWidth={88} marginTop={2}>
             <ResultPane
               content={controller.output}
+              footerMessage=""
               isSubmitting={controller.isSubmitting}
               promptSummary=""
               pulseFrame={controller.pulseFrame}
-              title="Diff"
+              title="Output"
             />
           </box>
         </box>
@@ -94,11 +95,12 @@ export function App() {
       <box width="100%" height="100%" flexDirection="column">
         <box width="100%" flexDirection="column">
           <text fg={COMPOSER_ACCENT}>Result</text>
-          <text fg={HERO_MUTED}>This run is finished. Start a new session for the next prompt.</text>
+          <text fg={HERO_MUTED}>This run is finished. Press `n` to start a new session.</text>
         </box>
         <box width="100%" flexGrow={1} marginTop={1}>
           <ResultPane
             content={controller.output}
+            footerMessage={controller.resultHint}
             isSubmitting={controller.isSubmitting}
             promptSummary={controller.promptSummary}
             pulseFrame={controller.pulseFrame}

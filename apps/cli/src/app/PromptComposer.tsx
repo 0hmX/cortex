@@ -65,7 +65,7 @@ export function PromptComposer({
         One Prompt
       </text>
       <text attributes={isDisabled ? TextAttributes.DIM : TextAttributes.NONE}>
-        {isDisabled ? statusText : "Submit once. Review the diff. Start a new session."}
+        {isDisabled ? statusText : "Submit once. Review the output. Start a new session."}
       </text>
       <textarea
         key={inputResetKey}
