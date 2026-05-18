@@ -45,8 +45,12 @@ export function App() {
         justifyContent="center"
       >
         <box width="100%" flexDirection="column" alignItems="center">
-          <text fg={COMPOSER_ACCENT}>Prompt once. Then inspect the output.</text>
-          <text fg={HERO_MUTED}>No chat. Use `n` after the result to start over.</text>
+          <text fg={COMPOSER_ACCENT}>
+            Prompt once. Then inspect the output.
+          </text>
+          <text fg={HERO_MUTED}>
+            No chat. Use `n` after the result to start over.
+          </text>
           <box width="100%" maxWidth={88} marginTop={2}>
             <PromptComposer {...composerProps} />
           </box>
@@ -95,7 +99,9 @@ export function App() {
       <box width="100%" height="100%" flexDirection="column">
         <box width="100%" flexDirection="column">
           <text fg={COMPOSER_ACCENT}>Result</text>
-          <text fg={HERO_MUTED}>This run is finished. Press `n` to start a new session.</text>
+          <text fg={HERO_MUTED}>
+            This run is finished. Press `n` to start a new session.
+          </text>
         </box>
         <box width="100%" flexGrow={1} marginTop={1}>
           <ResultPane

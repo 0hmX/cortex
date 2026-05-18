@@ -3,11 +3,7 @@ import { useRef } from "react";
 import { TextareaRenderable, TextAttributes } from "@opentui/core";
 
 import { createComposerKeyBindings } from "../composer/createComposerKeyBindings";
-import {
-  COMPOSER_ACCENT,
-  COMPOSER_SURFACE_BACKGROUND,
-  HERO_MUTED,
-} from "./ui";
+import { COMPOSER_ACCENT, COMPOSER_SURFACE_BACKGROUND, HERO_MUTED } from "./ui";
 
 const MAX_COMPOSER_HEIGHT = 6;
 const COMPOSER_KEY_BINDINGS = createComposerKeyBindings();
@@ -58,14 +54,13 @@ export function PromptComposer({
         focusInput();
       }}
     >
-      <text
-        fg={COMPOSER_ACCENT}
-        attributes={TextAttributes.BOLD}
-      >
+      <text fg={COMPOSER_ACCENT} attributes={TextAttributes.BOLD}>
         One Prompt
       </text>
       <text attributes={isDisabled ? TextAttributes.DIM : TextAttributes.NONE}>
-        {isDisabled ? statusText : "Submit once. Review the output. Start a new session."}
+        {isDisabled
+          ? statusText
+          : "Submit once. Review the output. Start a new session."}
       </text>
       <textarea
         key={inputResetKey}
@@ -80,7 +75,10 @@ export function PromptComposer({
           const value = inputRef.current?.plainText ?? "";
           const nextHeight = Math.max(
             1,
-            Math.min(MAX_COMPOSER_HEIGHT, inputRef.current?.virtualLineCount ?? 1)
+            Math.min(
+              MAX_COMPOSER_HEIGHT,
+              inputRef.current?.virtualLineCount ?? 1
+            )
           );
 
           onDraftChange(value, nextHeight);

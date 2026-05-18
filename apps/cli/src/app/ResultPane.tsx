@@ -39,11 +39,21 @@ export function ResultPane({
       <text fg={HERO_MUTED} attributes={TextAttributes.BOLD}>
         {title}
       </text>
-      {promptSummary ? <text fg={HERO_MUTED}>Prompt: {promptSummary}</text> : null}
-      <scrollbox width="100%" flexGrow={1} scrollY stickyScroll stickyStart="top">
+      {promptSummary ? (
+        <text fg={HERO_MUTED}>Prompt: {promptSummary}</text>
+      ) : null}
+      <scrollbox
+        width="100%"
+        flexGrow={1}
+        scrollY
+        stickyScroll
+        stickyStart="top"
+      >
         <text>{body}</text>
       </scrollbox>
-      {!isSubmitting && footerMessage ? <text fg={HERO_MUTED}>{footerMessage}</text> : null}
+      {!isSubmitting && footerMessage ? (
+        <text fg={HERO_MUTED}>{footerMessage}</text>
+      ) : null}
     </box>
   );
 }
