@@ -85,6 +85,16 @@ export class CliFileLogger {
   }
 
   /**
+   * Records a handled keyboard shortcut invocation.
+   *
+   * @param shortcut - Normalized shortcut identifier.
+   * @returns Nothing.
+   */
+  public logShortcut(shortcut: string): void {
+    this.writeLine("shortcut.invoked", { shortcut });
+  }
+
+  /**
    * Marks the end of the current CLI session.
    *
    * @param reason - Short reason describing why the session ended.

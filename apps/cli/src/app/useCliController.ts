@@ -39,6 +39,18 @@ type CliController = {
   updateDraft: (value: string, height: number) => void;
 };
 
+function isStartNewSessionShortcut(event: KeyEvent): boolean {
+  if (!event.ctrl) {
+    return false;
+  }
+
+  return (
+    event.name.toLowerCase() === "n" ||
+    event.sequence === "\u000e" ||
+    event.raw === "\u000e"
+  );
+}
+
 /**
  * Owns prompt execution, command handling, and single-result UI state.
  *
@@ -181,11 +193,13 @@ export function useCliController({
     }
 
     const onKeyPress = (event: KeyEvent) => {
-      if (!event.ctrl || event.name !== "n") {
+      if (!isStartNewSessionShortcut(event)) {
         return;
       }
 
       event.preventDefault();
+      event.stopPropagation();
+      services.logger.logShortcut("ctrl+n");
       startNewSession();
     };
 
