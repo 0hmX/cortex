@@ -3,6 +3,9 @@ import { createAgentSession, type AgentSession } from "@cortex/sdk";
 import { logDirectory, workingDirectory } from "../constants";
 import { CliFileLogger } from "../logging/CliFileLogger";
 
+/**
+ * Groups together the long-lived collaborators shared across the CLI shell.
+ */
 export type CliAppServices = {
   createSession: () => AgentSession;
   logger: CliFileLogger;

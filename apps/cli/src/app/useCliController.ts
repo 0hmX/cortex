@@ -1,25 +1,29 @@
-import {
-  startTransition,
-  useEffect,
-  useEffectEvent,
-  useState,
-} from "react";
+import { startTransition, useEffect, useEffectEvent, useState } from "react";
 
 import type { KeyEvent } from "@opentui/core";
 
 import type { CliAppServices } from "./createAppServices";
 
+/**
+ * Describes the subset of key subscription APIs consumed by the controller.
+ */
 type KeyHandlerLike = {
   off: (eventName: "keypress", listener: (event: KeyEvent) => void) => void;
   on: (eventName: "keypress", listener: (event: KeyEvent) => void) => void;
 };
 
+/**
+ * Defines the dependencies required to wire CLI controller behavior.
+ */
 type UseCliControllerOptions = {
   keyHandler: KeyHandlerLike | null | undefined;
   onExit: () => void;
   services: CliAppServices;
 };
 
+/**
+ * Captures the rendered CLI state and event handlers exposed to the UI tree.
+ */
 type CliController = {
   draft: string;
   inputHeight: number;
@@ -39,6 +43,13 @@ type CliController = {
   updateDraft: (value: string, height: number) => void;
 };
 
+/**
+ * Filters for plain unmodified key presses in the result view.
+ *
+ * @param event - Keyboard event emitted by the terminal renderer.
+ * @param key - Expected lowercase key name.
+ * @returns `true` when the event matches the requested plain key.
+ */
 function isPlainResultKey(event: KeyEvent, key: string): boolean {
   if (event.ctrl || event.meta || event.shift) {
     return false;

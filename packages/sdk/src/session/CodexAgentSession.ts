@@ -23,6 +23,8 @@ export class CodexAgentSession implements AgentSession {
   public constructor(options: AgentSessionOptions = {}) {
     this.codex = new Codex();
     this.threadOptions = {
+      approvalPolicy: "never",
+      sandboxMode: "danger-full-access",
       workingDirectory: options.workingDirectory,
       skipGitRepoCheck: true,
     };

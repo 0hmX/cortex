@@ -2,6 +2,11 @@ import path from "node:path";
 import { existsSync } from "node:fs";
 import process from "node:process";
 
+/**
+ * Resolves the working directory used for CLI-triggered agent runs.
+ *
+ * @returns The preferred workspace root or the current process directory.
+ */
 function resolveDefaultWorkingDirectory(): string {
   const launchCwd = process.env.CORTEX_LAUNCH_CWD?.trim();
   if (launchCwd) {
